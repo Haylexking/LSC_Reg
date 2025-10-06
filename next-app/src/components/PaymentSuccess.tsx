@@ -1,5 +1,5 @@
-export const dynamic = "force-dynamic";
 "use client";
+export const dynamic = "force-dynamic";
 import React, { useEffect } from 'react';
 
 // Map skills to WhatsApp group invite links. Update these with your real group URLs.
