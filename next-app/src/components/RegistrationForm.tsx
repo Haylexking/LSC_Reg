@@ -36,25 +36,27 @@ export default function RegistrationForm() {
         return;
       }
 
-      const registrationId = insertRes?.data?.[0]?.id || insertRes?.[0]?.id || null;
-
-      // Determine amount in kobo (Paystack expects the smallest currency unit)
-      const nairaAmount = membership === 'Visitor' ? 10000 : 5000;
-      const amountKobo = nairaAmount * 100;
+      const registrationId =
+        insertRes?.data?.[0]?.id || insertRes?.[0]?.id || null;
 
       // Call server API to initialize Paystack transaction
       const initRes = await fetch('/api/paystack/init', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: amountKobo,
           email,
           fullName,
           registrationId,
+          memberType: membership.toLowerCase(), // ✅ added
         }),
       });
 
       const initData = await initRes.json();
+
+      // Debug alert for phone testing
+      console.log("Init response:", initData);
+      alert(JSON.stringify(initData));
+
       if (!initRes.ok) {
         setError(initData?.error || 'Payment initialization failed');
         setLoading(false);
@@ -79,57 +81,56 @@ export default function RegistrationForm() {
     <div className="w-full max-w-md space-y-8">
       <div className="bg-card-light dark:bg-card-dark p-8 rounded-xl shadow-lg">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground-light dark:text-foreground-dark">Register for the Bootcamp</h2>
-          <p className="mt-2 text-sm text-placeholder-light dark:text-placeholder-dark">Fill in your details to secure your spot.</p>
+          <h2 className="text-3xl font-bold text-foreground-light dark:text-foreground-dark">
+            Register for the Bootcamp
+          </h2>
+          <p className="mt-2 text-sm text-placeholder-light dark:text-placeholder-dark">
+            Fill in your details to secure your spot.
+          </p>
         </div>
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <input name="remember" type="hidden" value="true" />
           <div className="space-y-4 rounded-lg">
             <div>
-              <label className="sr-only" htmlFor="full-name">Full Name</label>
               <input
                 id="full-name"
                 name="full-name"
                 value={fullName}
-                onChange={e => setFullName(e.target.value)}
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Full Name"
                 required
-                className="relative block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark placeholder-placeholder-light dark:placeholder-placeholder-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                className="relative block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark placeholder-placeholder-light dark:placeholder-placeholder-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               />
             </div>
             <div>
-              <label className="sr-only" htmlFor="email-address">Email address</label>
               <input
                 id="email-address"
                 name="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 placeholder="Email address"
                 required
-                className="relative block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark placeholder-placeholder-light dark:placeholder-placeholder-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                className="relative block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark placeholder-placeholder-light dark:placeholder-placeholder-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               />
             </div>
             <div>
-              <label className="sr-only" htmlFor="phone-number">Phone Number</label>
               <input
                 id="phone-number"
                 name="phone-number"
                 value={phone}
-                onChange={e => setPhone(e.target.value)}
+                onChange={(e) => setPhone(e.target.value)}
                 placeholder="Phone Number"
                 required
-                className="relative block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark placeholder-placeholder-light dark:placeholder-placeholder-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                className="relative block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark placeholder-placeholder-light dark:placeholder-placeholder-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               />
             </div>
             <div>
-              <label className="sr-only" htmlFor="skill">Select Skill</label>
               <select
                 id="skill"
                 name="skill"
                 value={skill}
-                onChange={e => setSkill(e.target.value)}
-                className="relative block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                onChange={(e) => setSkill(e.target.value)}
+                className="relative block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               >
                 <option value="">Select Skill</option>
                 <option>UI/UX Design</option>
@@ -144,6 +145,8 @@ export default function RegistrationForm() {
                 <option>Livestreaming & Audio Production</option>
               </select>
             </div>
+
+            {/* Membership Section */}
             <fieldset>
               <legend className="sr-only">Membership Status</legend>
               <div className="space-y-3">
@@ -157,7 +160,12 @@ export default function RegistrationForm() {
                     onChange={() => setMembership('Member')}
                     className="h-4 w-4 text-primary border-input-border-light dark:border-input-border-dark focus:ring-primary"
                   />
-                  <label className="ml-3 block text-sm font-medium text-foreground-light dark:text-foreground-dark" htmlFor="member">Member</label>
+                  <label
+                    htmlFor="member"
+                    className="ml-3 block text-sm font-medium text-foreground-light dark:text-foreground-dark"
+                  >
+                    Member / PSF
+                  </label>
                 </div>
                 <div className="flex items-center">
                   <input
@@ -169,7 +177,12 @@ export default function RegistrationForm() {
                     onChange={() => setMembership('Visitor')}
                     className="h-4 w-4 text-primary border-input-border-light dark:border-input-border-dark focus:ring-primary"
                   />
-                  <label className="ml-3 block text-sm font-medium text-foreground-light dark:text-foreground-dark" htmlFor="visitor">Visitor</label>
+                  <label
+                    htmlFor="visitor"
+                    className="ml-3 block text-sm font-medium text-foreground-light dark:text-foreground-dark"
+                  >
+                    Visitor
+                  </label>
                 </div>
               </div>
             </fieldset>
@@ -179,13 +192,6 @@ export default function RegistrationForm() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
-              {loading ? 'Processing…' : 'Register & Pay'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
+              {loading ? 'Processing…' : 'Register &
