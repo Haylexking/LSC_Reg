@@ -17,6 +17,9 @@ export default function RegistrationForm() {
     setError(null);
 
     try {
+      // ✅ Ensure membership is always lowercase before inserting
+      const normalizedMembership = membership.toLowerCase() as 'member' | 'visitor';
+
       // Insert registration into Supabase
       const insertRes: any = await (supabase as any)
         .from('bootcamp_registrations')
@@ -25,7 +28,7 @@ export default function RegistrationForm() {
           email,
           phone_number: phone,
           skill,
-          membership_status: membership,
+          membership_status: normalizedMembership, // ✅ Fixed
           payment_status: 'pending',
         })
         .select();
@@ -53,13 +56,13 @@ export default function RegistrationForm() {
           email,
           fullName,
           registrationId,
-          memberType: membership, // ✅ now properly matches your backend
+          memberType: normalizedMembership, // ✅ Also lowercase for Paystack logic
         }),
       });
 
       const initData = await initRes.json();
       console.log('Paystack init response:', initData);
-      alert(JSON.stringify(initData)); // ✅ helps you debug from your phone
+      alert(JSON.stringify(initData)); // Debug
 
       if (!initRes.ok) {
         setError(initData?.error || 'Payment initialization failed');
@@ -96,6 +99,7 @@ export default function RegistrationForm() {
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4 rounded-lg">
+            {/* Inputs */}
             <input
               id="full-name"
               name="full-name"
@@ -127,6 +131,7 @@ export default function RegistrationForm() {
               className="w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark placeholder-placeholder-light dark:placeholder-placeholder-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
             />
 
+            {/* Skills Dropdown */}
             <select
               id="skill"
               name="skill"
