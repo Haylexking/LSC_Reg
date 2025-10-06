@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Amount logic (in kobo)
+    // 💰 Amount logic (in kobo)
     const amount =
       memberType === 'member'
         ? 5000 * 100
@@ -35,15 +35,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 🔥 Dynamically set callback URL based on environment
-    const baseUrl =
-      process.env.NODE_ENV === 'production'
-        ? 'https://lsc-tsa-bootcamp-reg.vercel.app'
-        : 'http://localhost:3000';
+    // ✅ Use only the live domain
+    const callbackUrl = `https://lsc-tsa-bootcamp-reg.vercel.app/payment-success?registration_id=${registrationId}`;
 
-    const callbackUrl = `${baseUrl}/payment-success?registration_id=${registrationId}`;
-
-    // Initialize Paystack transaction
+    // 🚀 Initialize Paystack transaction
     const initRes = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
