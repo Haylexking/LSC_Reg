@@ -1,23 +1,31 @@
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-.vscode/*
-!.vscode/extensions.json
-.idea
+# OS files
 .DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node modules at repo root (if present)
+node_modules/
+
+# Environment files
 .env
+.env.local
+.env.*.local
+
+# Archive or backups if you created them and don't want them in git
+# archive/
+
+# Build artifact (if you build at the repo root)
+dist/
+build/

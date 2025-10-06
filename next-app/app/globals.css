@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme tokens to match the provided HTML's Tailwind config */
+:root {
+  --primary: #1173d4;
+  --background-light: #f6f7f8;
+  --background-dark: #101922;
+  --foreground-light: #1f2937;
+  --foreground-dark: #f9fafb;
+  --card-light: #ffffff;
+  --card-dark: #1f2937;
+  --input-light: #ffffff;
+  --input-dark: #2d3748;
+  --input-border-light: #d1d5db;
+  --input-border-dark: #4a5568;
+  --placeholder-light: #6b7280;
+  --placeholder-dark: #a0aec0;
+}
+
+/* Global background and font */
+body {
+  font-family: "Work Sans", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+  /* Default light theme — only switch to dark when a .dark class is present */
+  background-color: var(--background-light);
+  color: var(--foreground-light);
+}
+
+/* Use class-based dark mode so the site defaults to light unless .dark is added to <html> */
+.dark body {
+  background-color: var(--background-dark);
+  color: var(--foreground-dark);
+}
+
+/* Card, header and input defaults to match the HTML sample */
+.bg-card-light {
+  background-color: var(--card-light);
+}
+.dark .bg-card-dark {
+  background-color: var(--card-dark);
+}
+
+.text-foreground-light {
+  color: var(--foreground-light);
+}
+.dark .text-foreground-dark {
+  color: var(--foreground-dark);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+/* Input styles */
+input,
+select,
+textarea {
+  background-color: var(--input-light);
+  color: var(--foreground-light);
+  border-color: var(--input-border-light);
+}
+
+/* Dark mode inputs only when .dark is present */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: var(--input-dark);
+  color: var(--foreground-dark);
+  border-color: var(--input-border-dark);
+}
+
+::placeholder {
+  color: var(--placeholder-light);
+}
+.dark ::placeholder {
+  color: var(--placeholder-dark);
+}
+
+/* Utility classes used by the form markup */
+.container {
+  max-width: 1200px;
+}
+.rounded-xl {
+  border-radius: 0.75rem;
+}
+
+/* Primary button utilities (mimic Tailwind 'primary' color used in HTML sample) */
+.bg-primary {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+.bg-primary:hover {
+  filter: brightness(0.92);
+}
+
+/* A utility class consumers can use for styled primary buttons */
+.btn-primary {
+  display: inline-block;
+  background-color: var(--primary);
+  color: #ffffff;
+  border: 0;
+}
+.btn-primary:hover {
+  filter: brightness(0.92);
+}
+
+/* Ensure focus ring offset utilities used in markup work visually */
+.focus\:ring-offset-background-light:focus {
+  outline-offset: 2px;
+}
+.dark .focus\:ring-offset-background-dark:focus {
+  outline-offset: 2px;
+}

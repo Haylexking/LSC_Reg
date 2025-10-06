@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { supabase, BootcampRegistration } from '../lib/supabase';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const SKILLS = [
   'UI/UX Design',
@@ -29,7 +29,8 @@ export default function RegistrationForm() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [registrationId, setRegistrationId] = useState<string | null>(null);
+  // registrationId is intentionally unused in current UI flow - keep state if we need it later
+  const [, setRegistrationId] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -59,11 +60,12 @@ export default function RegistrationForm() {
         payment_status: 'pending'
       };
 
-      const { data, error: dbError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error: dbError } = (await supabase
         .from('bootcamp_registrations')
         .insert([registration])
         .select()
-        .maybeSingle();
+        .maybeSingle()) as any;
 
       if (dbError) {
         if (dbError.code === '23505') {
@@ -76,18 +78,19 @@ export default function RegistrationForm() {
       }
 
       if (data) {
-        setRegistrationId(data.id);
+        const id = data.id as string | undefined;
+        setRegistrationId(id || null);
 
         const paymentLink = formData.membership_status === 'Member'
           ? MEMBER_PAYMENT_LINK
           : VISITOR_PAYMENT_LINK;
 
-        const callbackUrl = `${window.location.origin}/payment-success?registration_id=${data.id}`;
+        const callbackUrl = `${window.location.origin}/payment-success?registration_id=${id}`;
         const fullPaymentLink = `${paymentLink}?callback_url=${encodeURIComponent(callbackUrl)}`;
 
         window.location.href = fullPaymentLink;
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.');
       setLoading(false);
     }

@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase';
 
 export default function PaymentSuccess() {
   const [loading, setLoading] = useState(true);
-  const [updated, setUpdated] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -20,21 +19,19 @@ export default function PaymentSuccess() {
       }
 
       try {
-        const { error: updateError } = await supabase
+        const { error: updateError } = (await supabase
           .from('bootcamp_registrations')
           .update({
             payment_status: 'completed',
             payment_reference: reference || null,
             updated_at: new Date().toISOString()
           })
-          .eq('id', registrationId);
+          .eq('id', registrationId)) as any;
 
         if (updateError) {
           setError('Failed to update payment status');
-        } else {
-          setUpdated(true);
         }
-      } catch (err) {
+      } catch {
         setError('An unexpected error occurred');
       } finally {
         setLoading(false);

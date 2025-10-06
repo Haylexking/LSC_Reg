@@ -1,19 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// During development, avoid throwing during module import if env vars are missing so
-// the app can still render and show a helpful message in the UI. We create a
-// fallback no-op client that surfaces console warnings when used.
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
 if (supabaseUrl && supabaseAnonKey) {
   supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 } else {
-  console.warn('VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is missing. Supabase client will be a no-op.');
-  // Create a minimal chainable no-op builder. Keep it `any` to avoid TypeScript
-  // generic incompatibilities with the real Supabase client during development.
+  // Dev-time no-op client: chainable builder that returns resolved promises.
+  console.warn('NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is missing. Supabase client will be a no-op.');
   const noopError = new Error('Supabase env missing');
 
   const makeNoopBuilder = () => {
