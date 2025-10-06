@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, fullName, registrationId, memberType } = body; // <-- added memberType
+    const { email, fullName, registrationId, memberType } = body;
 
     if (!email || !memberType || !registrationId) {
       return NextResponse.json(
@@ -35,6 +35,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 🔥 Dynamically set callback URL based on environment
+    const baseUrl =
+      process.env.NODE_ENV === 'production'
+        ? 'https://lsc-tsa-bootcamp-reg.vercel.app'
+        : 'http://localhost:3000';
+
+    const callbackUrl = `${baseUrl}/payment-success?registration_id=${registrationId}`;
+
     // Initialize Paystack transaction
     const initRes = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
@@ -46,7 +54,7 @@ export async function POST(req: NextRequest) {
         email,
         amount,
         metadata: { fullName, registrationId, memberType },
-        callback_url: `http://localhost:3000/payment-success?registration_id=${registrationId}`,
+        callback_url: callbackUrl,
       }),
     });
 
