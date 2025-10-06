@@ -1,13 +1,13 @@
 "use client";
-import React, { useState } from "react";
-import { supabase } from "../../lib/supabase";
+import React, { useState } from 'react';
+import { supabase } from '../../lib/supabase';
 
 export default function RegistrationForm() {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [skill, setSkill] = useState("");
-  const [membership, setMembership] = useState<"Member" | "Visitor">("Member");
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [skill, setSkill] = useState('');
+  const [membership, setMembership] = useState<'member' | 'visitor'>('member');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,21 +17,21 @@ export default function RegistrationForm() {
     setError(null);
 
     try {
-      // Insert registration with pending payment
+      // Insert registration into Supabase
       const insertRes: any = await (supabase as any)
-        .from("bootcamp_registrations")
+        .from('bootcamp_registrations')
         .insert({
           full_name: fullName,
           email,
           phone_number: phone,
           skill,
           membership_status: membership,
-          payment_status: "pending",
+          payment_status: 'pending',
         })
         .select();
 
       if (insertRes?.error) {
-        setError(insertRes.error.message || "Failed to register");
+        setError(insertRes.error.message || 'Failed to register');
         setLoading(false);
         return;
       }
@@ -39,34 +39,43 @@ export default function RegistrationForm() {
       const registrationId =
         insertRes?.data?.[0]?.id || insertRes?.[0]?.id || null;
 
-      // Call server API to initialize Paystack transaction
-      const initRes = await fetch("/api/paystack/init", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          fullName,
-          registrationId,
-          memberType: membership.toLowerCase(), // ✅ important
-        }),
-      });
-
-      const initData = await initRes.json();
-
-      if (!initRes.ok) {
-        setError(initData?.error || "Payment initialization failed");
+      if (!registrationId) {
+        setError('Failed to get registration ID');
         setLoading(false);
         return;
       }
 
-      // Redirect user to Paystack authorization URL
+      // Initialize Paystack transaction
+      const initRes = await fetch('/api/paystack/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          fullName,
+          registrationId,
+          memberType: membership, // ✅ now properly matches your backend
+        }),
+      });
+
+      const initData = await initRes.json();
+      console.log('Paystack init response:', initData);
+      alert(JSON.stringify(initData)); // ✅ helps you debug from your phone
+
+      if (!initRes.ok) {
+        setError(initData?.error || 'Payment initialization failed');
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Redirect to Paystack
       const authorizationUrl = initData?.data?.authorization_url;
       if (authorizationUrl) {
         window.location.href = authorizationUrl;
       } else {
-        setError("Payment provider did not return a payment URL");
+        setError('Payment provider did not return a payment URL');
       }
     } catch (err: any) {
+      console.error('Submit Error:', err);
       setError(err?.message || String(err));
     } finally {
       setLoading(false);
@@ -94,18 +103,18 @@ export default function RegistrationForm() {
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Full Name"
               required
-              className="block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+              className="w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark placeholder-placeholder-light dark:placeholder-placeholder-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
             />
 
             <input
               id="email-address"
               name="email"
-              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              type="email"
               placeholder="Email address"
               required
-              className="block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+              className="w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark placeholder-placeholder-light dark:placeholder-placeholder-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
             />
 
             <input
@@ -115,7 +124,7 @@ export default function RegistrationForm() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Phone Number"
               required
-              className="block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+              className="w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark placeholder-placeholder-light dark:placeholder-placeholder-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
             />
 
             <select
@@ -123,7 +132,8 @@ export default function RegistrationForm() {
               name="skill"
               value={skill}
               onChange={(e) => setSkill(e.target.value)}
-              className="block w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+              className="w-full px-3 py-3 border border-input-border-light dark:border-input-border-dark bg-input-light dark:bg-input-dark text-foreground-light dark:text-foreground-dark rounded-lg focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+              required
             >
               <option value="">Select Skill</option>
               <option>UI/UX Design</option>
@@ -133,12 +143,12 @@ export default function RegistrationForm() {
               <option>Product Management</option>
               <option>Photography</option>
               <option>Graphic Design</option>
-              <option>Social Media management & Content Creation</option>
-              <option>Video editing</option>
+              <option>Social Media Management & Content Creation</option>
+              <option>Video Editing</option>
               <option>Livestreaming & Audio Production</option>
             </select>
 
-            {/* Membership Section */}
+            {/* Membership */}
             <fieldset>
               <legend className="sr-only">Membership Status</legend>
               <div className="space-y-3">
@@ -148,13 +158,13 @@ export default function RegistrationForm() {
                     name="membership-status"
                     type="radio"
                     value="member"
-                    checked={membership === "Member"}
-                    onChange={() => setMembership("Member")}
+                    checked={membership === 'member'}
+                    onChange={() => setMembership('member')}
                     className="h-4 w-4 text-primary border-input-border-light dark:border-input-border-dark focus:ring-primary"
                   />
                   <label
                     htmlFor="member"
-                    className="ml-3 block text-sm font-medium text-foreground-light dark:text-foreground-dark"
+                    className="ml-3 text-sm font-medium text-foreground-light dark:text-foreground-dark"
                   >
                     Member / PSF
                   </label>
@@ -166,13 +176,13 @@ export default function RegistrationForm() {
                     name="membership-status"
                     type="radio"
                     value="visitor"
-                    checked={membership === "Visitor"}
-                    onChange={() => setMembership("Visitor")}
+                    checked={membership === 'visitor'}
+                    onChange={() => setMembership('visitor')}
                     className="h-4 w-4 text-primary border-input-border-light dark:border-input-border-dark focus:ring-primary"
                   />
                   <label
                     htmlFor="visitor"
-                    className="ml-3 block text-sm font-medium text-foreground-light dark:text-foreground-dark"
+                    className="ml-3 text-sm font-medium text-foreground-light dark:text-foreground-dark"
                   >
                     Visitor
                   </label>
@@ -181,15 +191,17 @@ export default function RegistrationForm() {
             </fieldset>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 text-sm font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-            >
-              {loading ? "Processing…" : "Register & Pay"}
-            </button>
-          </div>
+          {error && (
+            <p className="text-red-600 text-sm font-medium text-center">{error}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          >
+            {loading ? 'Processing…' : 'Register & Pay'}
+          </button>
         </form>
       </div>
     </div>
