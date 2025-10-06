@@ -7,7 +7,8 @@ export default function RegistrationForm() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [skill, setSkill] = useState('');
-  const [membership, setMembership] = useState<'member' | 'visitor'>('member');
+  // ✅ FIX: Use capitalized values that match the TypeScript interface
+  const [membership, setMembership] = useState<'Member' | 'Visitor'>('Member');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,8 +18,8 @@ export default function RegistrationForm() {
     setError(null);
 
     try {
-      // ✅ Ensure membership is always lowercase before inserting
-      const normalizedMembership = membership.toLowerCase() as 'member' | 'visitor';
+      // ✅ REMOVED: Don't convert to lowercase
+      // const normalizedMembership = membership.toLowerCase() as 'member' | 'visitor';
 
       // Insert registration into Supabase
       const insertRes: any = await (supabase as any)
@@ -28,7 +29,7 @@ export default function RegistrationForm() {
           email,
           phone_number: phone,
           skill,
-          membership_status: normalizedMembership, // ✅ Fixed
+          membership_status: membership, // ✅ Use the capitalized value directly
           payment_status: 'pending',
         })
         .select();
@@ -56,13 +57,12 @@ export default function RegistrationForm() {
           email,
           fullName,
           registrationId,
-          memberType: normalizedMembership, // ✅ Also lowercase for Paystack logic
+          memberType: membership, // ✅ Use capitalized value here too
         }),
       });
 
       const initData = await initRes.json();
       console.log('Paystack init response:', initData);
-      alert(JSON.stringify(initData)); // Debug
 
       if (!initRes.ok) {
         setError(initData?.error || 'Payment initialization failed');
@@ -162,9 +162,9 @@ export default function RegistrationForm() {
                     id="member"
                     name="membership-status"
                     type="radio"
-                    value="member"
-                    checked={membership === 'member'}
-                    onChange={() => setMembership('member')}
+                    value="Member" // ✅ Changed to capitalized
+                    checked={membership === 'Member'} // ✅ Changed to capitalized
+                    onChange={() => setMembership('Member')} // ✅ Changed to capitalized
                     className="h-4 w-4 text-primary border-input-border-light dark:border-input-border-dark focus:ring-primary"
                   />
                   <label
@@ -180,9 +180,9 @@ export default function RegistrationForm() {
                     id="visitor"
                     name="membership-status"
                     type="radio"
-                    value="visitor"
-                    checked={membership === 'visitor'}
-                    onChange={() => setMembership('visitor')}
+                    value="Visitor" // ✅ Changed to capitalized
+                    checked={membership === 'Visitor'} // ✅ Changed to capitalized
+                    onChange={() => setMembership('Visitor')} // ✅ Changed to capitalized
                     className="h-4 w-4 text-primary border-input-border-light dark:border-input-border-dark focus:ring-primary"
                   />
                   <label
