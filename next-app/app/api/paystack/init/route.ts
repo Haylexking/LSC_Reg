@@ -12,17 +12,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 💰 Amount logic (in kobo)
+    // ✅ Use the exact same values as the database - 'Member' and 'Visitor'
     const amount =
-      memberType === 'member'
-        ? 5000 * 100
-        : memberType === 'visitor'
-        ? 10000 * 100
+      memberType === 'Member'
+        ? 5000 * 100 // 5,000 Naira for Members
+        : memberType === 'Visitor'
+        ? 10000 * 100 // 10,000 Naira for Visitors
         : null;
 
     if (!amount) {
       return NextResponse.json(
-        { error: 'Invalid memberType value' },
+        { error: 'Invalid memberType value. Must be "Member" or "Visitor"' },
         { status: 400 }
       );
     }
@@ -35,10 +35,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ Use only the live domain
     const callbackUrl = `https://lsc-tsa-bootcamp-reg.vercel.app/payment-success?registration_id=${registrationId}`;
 
-    // 🚀 Initialize Paystack transaction
     const initRes = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
@@ -48,7 +46,11 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         email,
         amount,
-        metadata: { fullName, registrationId, memberType },
+        metadata: { 
+          fullName, 
+          registrationId, 
+          memberType // ✅ Store as 'Member' or 'Visitor' - same as database
+        },
         callback_url: callbackUrl,
       }),
     });
