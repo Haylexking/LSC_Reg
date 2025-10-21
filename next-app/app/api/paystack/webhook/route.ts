@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { supabase } from "../../../../lib/supabase"; // adjust if your path differs
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,14 +29,27 @@ export async function POST(req: NextRequest) {
 
     const event = JSON.parse(body);
 
+    // Prepare Supabase admin client (service role) for RLS-safe updates
+    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json(
+        { error: "Server misconfigured: missing SUPABASE URL or SERVICE ROLE key" },
+        { status: 500 }
+      );
+    }
+
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
     // We only care about successful transactions
     if (event?.event === "charge.success") {
       const registrationId = event?.data?.metadata?.registrationId;
 
       if (registrationId) {
-        await (supabase as any)
+        await (admin as any)
           .from("bootcamp_registrations")
-          .update({ payment_status: "paid" })
+          .update({ payment_status: "completed" })
           .eq("id", registrationId);
       }
     }

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ Use the exact same values as the database - 'Member' and 'Visitor'
+    // Use the exact same values as the database - 'Member' and 'Visitor'
     const amount =
       memberType === 'Member'
         ? 5000 * 100 // 5,000 Naira for Members
@@ -35,7 +35,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const callbackUrl = `https://lsc-tsa-bootcamp-reg.vercel.app/payment-success?registration_id=${registrationId}`;
+    const base = process.env.APP_BASE_URL || req.headers.get('origin') || 'http://localhost:3000';
+    const callbackUrl = `${base}/payment-success?registration_id=${registrationId}`;
 
     const initRes = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
         metadata: { 
           fullName, 
           registrationId, 
-          memberType // ✅ Store as 'Member' or 'Visitor' - same as database
+          memberType // Store as 'Member' or 'Visitor' - same as database
         },
         callback_url: callbackUrl,
       }),
